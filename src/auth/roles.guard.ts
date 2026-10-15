@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Rol } from '../entidades/rol.enum';
@@ -25,7 +26,10 @@ export class RolesGuard implements CanActivate {
     const request = context
       .switchToHttp()
       .getRequest<{ user?: AuthenticatedUser }>();
-    if (!request.user || !roles.includes(request.user.rol)) {
+    if (!request.user) {
+      throw new UnauthorizedException();
+    }
+    if (!roles.includes(request.user.rol)) {
       throw new ForbiddenException('No tienes permisos para esta operación');
     }
     return true;

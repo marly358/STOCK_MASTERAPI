@@ -15,8 +15,10 @@ async function bootstrap(): Promise<void> {
   );
   const config = app.get(ConfigService);
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('StockMaster API')
-    .setDescription('API base para la gestión de inventarios')
+    .setTitle('StockMaster')
+    .setDescription(
+      'API REST para la gestión de productos, categorías y movimientos de inventario.',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();
