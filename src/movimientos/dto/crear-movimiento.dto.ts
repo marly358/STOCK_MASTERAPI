@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, Max, Min } from 'class-validator';
 import { CANTIDAD_MAXIMA, CANTIDAD_MINIMA } from '../movimientos.constants';
 
@@ -10,11 +11,22 @@ import { CANTIDAD_MAXIMA, CANTIDAD_MINIMA } from '../movimientos.constants';
  * JWT y el segundo lo calcula el servidor.
  */
 export class CrearMovimientoDto {
+  @ApiProperty({
+    description: 'Identificador del producto',
+    example: 3,
+    minimum: 1,
+  })
   @Type(() => Number)
   @IsInt()
   @Min(CANTIDAD_MINIMA)
   productoId!: number;
 
+  @ApiProperty({
+    description: 'Cantidad que ingresa o sale del inventario',
+    example: 5,
+    minimum: CANTIDAD_MINIMA,
+    maximum: CANTIDAD_MAXIMA,
+  })
   @Type(() => Number)
   @IsInt()
   @Min(CANTIDAD_MINIMA)

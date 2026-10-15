@@ -1,6 +1,6 @@
 # StockMaster API
 
-API base de inventario construida con NestJS 11, TypeORM 0.3 y MySQL. Incluye
+API de inventario construida con NestJS 11, TypeORM 0.3 y MySQL. Incluye
 las entidades compartidas `Usuario`, `Categoria`, `Producto` y `Movimiento`,
 registro e inicio de sesión JWT, y el endpoint protegido `GET /usuarios/yo`.
 
@@ -39,7 +39,25 @@ La documentación Swagger se sirve en `/api/docs`.
 
 Las respuestas de usuario y los JWT nunca contienen el hash de contraseña. El
 usuario autenticado queda disponible mediante `@CurrentUser()` y expone `id` y
-`rol` para que los módulos futuros puedan implementar autorización.
+`rol`. `@Roles()` y `RolesGuard` aplican los permisos sobre la identidad
+validada por la estrategia JWT; una solicitud no autenticada recibe `401` y
+una solicitud autenticada sin permiso recibe `403`.
+
+## Permisos
+
+| Recurso | Operación | Permiso |
+| --- | --- | --- |
+| Usuarios | Registro y login | Público |
+| Usuarios | Consultar la identidad propia | Cualquier usuario autenticado |
+| Categorías | Listar y consultar | Cualquier usuario autenticado |
+| Categorías | Crear, actualizar y eliminar | `ADMIN` |
+| Movimientos | Historial y consulta por ID | Cualquier usuario autenticado |
+| Movimientos | Registrar entradas y salidas | `BODEGUERO` |
+
+Los endpoints de productos aún no están incorporados en esta rama; cuando se
+integre ese módulo deberá aplicarse allí la matriz acordada (`ADMIN` y
+`BODEGUERO` para crear, cualquier usuario autenticado para consultar y solo
+`ADMIN` para actualizar o eliminar).
 
 ## Movimientos de inventario
 
@@ -66,9 +84,10 @@ movimientos no tienen endpoints de edición o borrado.
 ## Pruebas
 
 `npm run test:e2e` ejecuta pruebas HTTP con un repositorio de usuario en memoria
-y el servicio de movimientos simulado; no requiere MySQL ni modifica datos de
-desarrollo. La aplicación normal sí requiere un servidor MySQL configurado en
-`.env`.
+y servicios de categorías y movimientos simulados; no requiere MySQL ni
+modifica datos de desarrollo. Estas pruebas ejercitan autenticación,
+autorización por rol, validación de DTO y la especificación Swagger. La
+aplicación normal sí requiere un servidor MySQL configurado en `.env`.
 
 Las pruebas de integración de movimientos contra MySQL real (`test/movimientos.mysql.e2e-spec.ts`)
 están deshabilitadas por defecto porque usan una base dedicada

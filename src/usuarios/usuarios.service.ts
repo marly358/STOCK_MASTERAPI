@@ -7,8 +7,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { Rol } from '../entidades/rol.enum';
 import { Usuario } from '../entidades/usuario.entity';
+import { UsuarioPublicoDto } from './dto/usuario-publico.dto';
 
-export type UsuarioPublico = Pick<Usuario, 'id' | 'correo' | 'rol'>;
+export { UsuarioPublicoDto as UsuarioPublico } from './dto/usuario-publico.dto';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -24,7 +25,7 @@ function isDuplicateEmailError(error: unknown): boolean {
   );
 }
 
-function toPublicUser(user: Usuario): UsuarioPublico {
+function toPublicUser(user: Usuario): UsuarioPublicoDto {
   return { id: user.id, correo: user.correo, rol: user.rol };
 }
 
@@ -39,7 +40,7 @@ export class UsuariosService {
     return this.usuariosRepository.findOne({ where: { correo } });
   }
 
-  async findPublicById(id: number): Promise<UsuarioPublico> {
+  async findPublicById(id: number): Promise<UsuarioPublicoDto> {
     const usuario = await this.usuariosRepository.findOne({ where: { id } });
     if (!usuario) {
       throw new NotFoundException('Usuario no encontrado.');
@@ -50,7 +51,7 @@ export class UsuariosService {
   async createPublicUser(
     correo: string,
     contrasenaHash: string,
-  ): Promise<UsuarioPublico> {
+  ): Promise<UsuarioPublicoDto> {
     const usuario = this.usuariosRepository.create({
       correo,
       contrasenaHash,
