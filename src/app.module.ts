@@ -9,6 +9,7 @@ import { Movimiento } from './entidades/movimiento.entity';
 import { Producto } from './entidades/producto.entity';
 import { Usuario } from './entidades/usuario.entity';
 import { MovimientosModule } from './movimientos/movimientos.module';
+import { ProductosModule } from './productos/productos.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 
 @Module({
@@ -37,6 +38,7 @@ import { UsuariosModule } from './usuarios/usuarios.module';
     AuthModule,
     CategoriasModule,
     MovimientosModule,
+    ProductosModule,
   ],
 })
 export class AppModule {}
