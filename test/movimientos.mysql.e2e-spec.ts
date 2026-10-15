@@ -32,6 +32,7 @@ import { Rol } from '../src/entidades/rol.enum';
 import { Usuario } from '../src/entidades/usuario.entity';
 import { MovimientosModule } from '../src/movimientos/movimientos.module';
 import { MovimientoRespuesta } from '../src/movimientos/movimiento-respuesta';
+import { ProductosModule } from '../src/productos/productos.module';
 
 const TEST_SECRET = 'test-secret-with-at-least-thirty-two-characters';
 
@@ -59,6 +60,18 @@ function movimientosFrom(body: unknown): MovimientoRespuesta[] {
     throw new Error('La respuesta no es una lista de movimientos.');
   }
   return body as MovimientoRespuesta[];
+}
+
+function productoIdFrom(body: unknown): number {
+  if (
+    typeof body !== 'object' ||
+    body === null ||
+    !('id' in body) ||
+    typeof body.id !== 'number'
+  ) {
+    throw new Error('La respuesta no contiene el identificador de producto.');
+  }
+  return body.id;
 }
 
 const HABILITADAS = process.env.DB_TEST_MYSQL === '1';
@@ -135,6 +148,7 @@ describeMysql('Movimientos (e2e con MySQL real)', () => {
           dropSchema: true,
         }),
         MovimientosModule,
+        ProductosModule,
         PassportModule,
         JwtModule.register({
           secret: TEST_SECRET,
@@ -477,5 +491,64 @@ describeMysql('Movimientos (e2e con MySQL real)', () => {
       .expect(404);
 
     await expect(movimientosDe(producto.id)).resolves.toBe(1);
+  });
+
+  it('integra categorías y movimientos, y preserva el historial al eliminar', async () => {
+    const creado = await request(app.getHttpServer())
+      .post('/productos')
+      .set('Authorization', `******`)
+      .send({
+        nombre: 'Producto con historial',
+        descripcion: 'Creado mediante la API',
+        precio: 4.25,
+        categoriaId: categoria.id,
+      })
+      .expect(201);
+
+    const productoId = productoIdFrom(creado.body);
+    expect(creado.body).toMatchObject({
+      nombre: 'Producto con historial',
+      precio: '4.25',
+      stockActual: 0,
+      categoria: { id: categoria.id, nombre: 'General' },
+    });
+
+    await request(app.getHttpServer())
+      .post('/movimientos/entradas')
+      .set('Authorization', `******`)
+      .send({ productoId, cantidad: 3 })
+      .expect(201);
+
+    await expect(stockDe(productoId)).resolves.toBe(3);
+    await expect(movimientosDe(productoId)).resolves.toBe(1);
+    await request(app.getHttpServer())
+      .delete(`/productos/${productoId}`)
+      .set('Authorization', `******`)
+      .expect(409);
+
+    const consultado = await request(app.getHttpServer())
+      .get(`/productos/${productoId}`)
+      .set('Authorization', `******`)
+      .expect(200);
+    expect(consultado.body).toMatchObject({
+      stockActual: 3,
+      categoria: { id: categoria.id, nombre: 'General' },
+    });
+  });
+
+  it('rechaza categorías inexistentes sin insertar productos', async () => {
+    const cuentaAntes = await dataSource.getRepository(Producto).count();
+    await request(app.getHttpServer())
+      .post('/productos')
+      .set('Authorization', `******`)
+      .send({
+        nombre: 'Sin categoría',
+        precio: 1,
+        categoriaId: 999_999,
+      })
+      .expect(404);
+    await expect(dataSource.getRepository(Producto).count()).resolves.toBe(
+      cuentaAntes,
+    );
   });
 });
