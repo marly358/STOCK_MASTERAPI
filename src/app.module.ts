@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { CategoriasModule } from './categorias/categorias.module';
 import { validateEnvironment } from './config/env.validation';
 import { Categoria } from './entidades/categoria.entity';
 import { Movimiento } from './entidades/movimiento.entity';
@@ -33,6 +34,7 @@ import { UsuariosModule } from './usuarios/usuarios.module';
     }),
     UsuariosModule,
     AuthModule,
+    CategoriasModule,
   ],
 })
 export class AppModule {}
