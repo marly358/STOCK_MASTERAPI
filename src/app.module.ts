@@ -8,6 +8,7 @@ import { Categoria } from './entidades/categoria.entity';
 import { Movimiento } from './entidades/movimiento.entity';
 import { Producto } from './entidades/producto.entity';
 import { Usuario } from './entidades/usuario.entity';
+import { MovimientosModule } from './movimientos/movimientos.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 
 @Module({
@@ -35,6 +36,7 @@ import { UsuariosModule } from './usuarios/usuarios.module';
     UsuariosModule,
     AuthModule,
     CategoriasModule,
+    MovimientosModule,
   ],
 })
 export class AppModule {}
